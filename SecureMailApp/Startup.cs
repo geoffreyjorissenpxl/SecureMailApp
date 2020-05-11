@@ -53,6 +53,12 @@ namespace SecureMailApp
              options.SignIn.RequireConfirmedEmail = false;
             });
 
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+                options.Cookie.HttpOnly = true;
+            });
+
             services.AddScoped<IUserStore<User>, UserOnlyStore<User, SecureMailDbContext>>();
 
             services.AddAuthentication("cookies")
@@ -80,6 +86,7 @@ namespace SecureMailApp
 
             app.UseRouting();
             app.UseAuthorization();
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
