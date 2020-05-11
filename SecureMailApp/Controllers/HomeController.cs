@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -60,6 +62,7 @@ namespace SecureMailApp.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Success()
         {
             return View();
@@ -98,6 +101,13 @@ namespace SecureMailApp.Controllers
 
         public IActionResult LoggedIn()
         {
+            var stringBuilder = new StringBuilder();
+
+            foreach (var claim in User.Claims)
+            {
+                stringBuilder.Append(claim.Value.ToString());
+                ViewBag.claims = stringBuilder.ToString();
+            }
             return View();
         }
 
