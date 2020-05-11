@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -85,6 +86,13 @@ namespace SecureMailApp.Controllers
             return View();
         }
 
+        [Authorize]
+        public IActionResult Inbox()
+        {
+
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
@@ -102,7 +110,7 @@ namespace SecureMailApp.Controllers
                     await HttpContext.SignInAsync("cookies", new ClaimsPrincipal(identity));
                 }
 
-                return RedirectToAction(nameof(LoggedIn));
+                return RedirectToAction(nameof(Inbox));
             }
             ModelState.AddModelError("", "Invalid Username or Password.");
             return View();
