@@ -68,6 +68,12 @@ namespace SecureMailApp
                 options.Cookie.HttpOnly = true;
             });
 
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+                options.Cookie.HttpOnly = true;
+            });
+
             services.AddScoped<IUserStore<User>, UserOnlyStore<User, SecureMailDbContext>>();
 
           /*  services.AddAuthentication("cookies")
