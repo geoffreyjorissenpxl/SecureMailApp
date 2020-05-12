@@ -22,6 +22,14 @@
                     <input asp-for="ConfirmPassword" class="form-control" />
                 </div>
             </div>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <img id="img-captcha" src="~/get-captcha-image" />
+                </div>
+                <input type="text" class="form-control" placeholder="Captcha Code" asp-for="CaptchaCode" maxlength="4" />
+                <span asp-validation-for="CaptchaCode" class="text-danger"></span>
+            </div>
+
             <button type="submit" class="btn btn-primary">Submit</button>
             <div asp-validation-summary="All"></div>
         </form>

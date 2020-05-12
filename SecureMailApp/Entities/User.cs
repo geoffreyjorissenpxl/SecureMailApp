@@ -8,6 +8,7 @@ namespace SecureMailApp.Entities
 {
     public class User : IdentityUser
     {
+        public bool RsaKeysSet { get; set; }
 
     }
 }

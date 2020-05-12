@@ -21,5 +21,9 @@ namespace SecureMailApp.ViewModels
         [DataType(DataType.Password)]
         [Compare(nameof(Password))]
         public string  ConfirmPassword { get; set; }
+
+        [Required]
+        [StringLength(4)]
+        public string CaptchaCode { get; set; }
     }
 }

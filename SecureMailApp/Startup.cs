@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,8 @@ namespace SecureMailApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            //Activates authorization on the whole domain
+            services.AddControllersWithViews(/*o => o.Filters.Add(new AuthorizeFilter())*/);
             services.AddDbContext<SecureMailDbContext>(options =>
             {
                 string connection =
@@ -36,27 +38,40 @@ namespace SecureMailApp
                 options.UseSqlServer(connection);
             });
 
-            services.AddIdentityCore<User>(options =>
+            services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Lockout.AllowedForNewUsers = true;
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 
-             /*   options.Password.RequireDigit = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequiredLength = 8;*/
-             options.Password.RequireDigit = false;
-             options.Password.RequireNonAlphanumeric = false;
-             options.Password.RequiredLength = 6;
+                /*   options.Password.RequireDigit = true;
+                   options.Password.RequireNonAlphanumeric = true;
+                   options.Password.RequiredLength = 8;*/
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
 
 
-             options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedEmail = true;
+            })
+                .AddEntityFrameworkStores<SecureMailDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromDays(2);
+            });
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(20);
+                options.Cookie.HttpOnly = true;
             });
 
             services.AddScoped<IUserStore<User>, UserOnlyStore<User, SecureMailDbContext>>();
 
-            services.AddAuthentication("cookies")
-                .AddCookie("cookies", options => options.LoginPath = "/home/login");
+          /*  services.AddAuthentication("cookies")
+                .AddCookie("cookies", options => options.LoginPath = "/home/login");*/
 
         }
 
@@ -80,6 +95,7 @@ namespace SecureMailApp
 
             app.UseRouting();
             app.UseAuthorization();
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
