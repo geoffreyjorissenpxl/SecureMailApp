@@ -1,25 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SecureMailApp.Entities;
+using SecureMailApp.Services;
+using SecureMailApp.ViewModels;
 
 namespace SecureMailApp.Controllers
 {
     public class MessageController : Controller 
     {
-        private IMessageRepository messageRepository;
+        private SecureMailDbContext _secureMailDbContext;
+        private IHybridEncryptionService _hybridEncryptionService;
 
-        public MessageController(SecureMailDbContext context)
+        public MessageController(SecureMailDbContext context, IHybridEncryptionService hybridEncryptionService)
         {
-            this.messageRepository = new MessageRepository(context);
+            _secureMailDbContext = context;
+            _hybridEncryptionService = hybridEncryptionService;
+        }
+
+        public IActionResult Inbox()
+        {
+            var model = _secureMailDbContext.EncryptedPackets.
+                Where(e => e.ReceiverEmail == User.Identity.Name).OrderByDescending(e => e.ReceiveDate).ToList();
+
+            return View(model);
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Message>> GetMessages()
+        public IActionResult CreateMessage()
         {
-            return messageRepository.GetMessages().ToList();
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult CreateMessage(CreateMessageModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                _hybridEncryptionService.EncryptData(Encoding.ASCII.GetBytes(model.Text), new RSAEncryption(model.EmailRecipient), new DigitalSignature(User.Identity.Name), User.Identity.Name, model.EmailRecipient);
+                return RedirectToAction(nameof(MessageSentSuccessfully));
+            }
+
+            return View();
+          
+        }
+
+
+        public IActionResult GetMessage(int id)
+        {
+            var encryptedPacket = _secureMailDbContext.EncryptedPackets.FirstOrDefault(e => e.EncryptedPacketId == id);
+
+            var decryptedData = _hybridEncryptionService.DecryptData(encryptedPacket,
+                new RSAEncryption(encryptedPacket.ReceiverEmail), new DigitalSignature(encryptedPacket.SenderEmail));
+
+            ViewBag.Message = Encoding.UTF8.GetString(decryptedData);
+            return View();
+        }
+
+        public IActionResult MessageSentSuccessfully()
+        {
+            return View();
         }
     }
 }

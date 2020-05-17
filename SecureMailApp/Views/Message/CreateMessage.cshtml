@@ -1,0 +1,15 @@
+﻿@model CreateMessageModel
+
+
+    <form asp-action="CreateMessage" method="post">
+        <div class="form-group">
+            <label asp-for="EmailRecipient"></label>
+            <input asp-for="EmailRecipient" class="form-control" placeholder="name@example.com" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Text"></label>
+            <textarea asp-for="Text" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+        <div asp-validation-summary="All"></div>
+    </form>

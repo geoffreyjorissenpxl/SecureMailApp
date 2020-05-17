@@ -1,0 +1,24 @@
+﻿@model IEnumerable<EncryptedPacket>
+<div class="align-content-lg-center">
+
+    <table class="table table-sm">
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Sender</th>
+        </tr>
+
+        @foreach (var message in @Model)
+        {
+            <tr>
+                <td>@message.ReceiveDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@message.SenderEmail</td>
+                <td><a asp-controller="Message" asp-action="GetMessage" asp-route-id="@message.EncryptedPacketId">Read Message</a></td>
+            </tr>
+        }
+    </table>
+
+
+    <a asp-controller="Message" asp-action="CreateMessage">Create New Message</a>
+
+
+</div>

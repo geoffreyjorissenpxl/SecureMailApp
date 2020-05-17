@@ -56,7 +56,8 @@ namespace SecureMailApp.Controllers
 
                 if (!Captcha.ValidateCaptchaCode(model.CaptchaCode, HttpContext))
                 {
-                    return RedirectToAction(nameof(RegisterError));
+                    ModelState.AddModelError("", "Wrong captcha, please register again!");
+                    return View();
                 }
 
                 if (user == null)
@@ -119,14 +120,7 @@ namespace SecureMailApp.Controllers
             return View();
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public IActionResult RegisterError()
-        {
-            return View();
-        }
-
-
+      
 
         [AllowAnonymous]
         [HttpPost]
@@ -147,7 +141,7 @@ namespace SecureMailApp.Controllers
 
                     if (!user.RsaKeysSet)
                     {
-                        CreateRsaKeys($"c:\\temp\\publicKey{user.NormalizedEmail}.xml", $"c:\\temp\\privateKey{user.NormalizedEmail}.xml");
+                        CreateRsaKeys($"Storage/{user.NormalizedEmail}/publicKey{user.NormalizedEmail}.xml", $"Storage/{user.NormalizedEmail}/privateKey{user.NormalizedEmail}.xml");
                         user.RsaKeysSet = true;
                         await _secureMailDbContext.SaveChangesAsync();
                     }
@@ -155,7 +149,7 @@ namespace SecureMailApp.Controllers
                     var principal = await _claimsPrincipalFactory.CreateAsync(user);
                     await HttpContext.SignInAsync("Identity.Application", principal);
 
-                    return RedirectToAction(nameof(Inbox));
+                    return RedirectToAction("Inbox", "Message");
                 }
 
             }
@@ -163,24 +157,6 @@ namespace SecureMailApp.Controllers
             return View();
         }
 
-        public IActionResult Inbox()
-        {
-            var text = new StringBuilder();
-
-            foreach (var claim in User.Claims)
-            {
-                text.Append(claim.ToString());
-            }
-
-            ViewBag.Message = text;
-            return View();
-        }
-
-
-        public IActionResult LoggedIn()
-        {
-            return View();
-        }
 
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -201,6 +177,7 @@ namespace SecureMailApp.Controllers
             Stream s = new MemoryStream(result.CaptchaByteData);
             return new FileStreamResult(s, "image/png");
         }
+
 
         private void CreateRsaKeys(string pathToPublicKey, string pathToPrivateKey)
         {

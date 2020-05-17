@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SecureMailApp.Entities;
+using SecureMailApp.Services;
 
 namespace SecureMailApp
 {
@@ -30,13 +31,15 @@ namespace SecureMailApp
         public void ConfigureServices(IServiceCollection services)
         {
             //Activates authorization on the whole domain
-            services.AddControllersWithViews(/*o => o.Filters.Add(new AuthorizeFilter())*/);
+            services.AddControllersWithViews(o => o.Filters.Add(new AuthorizeFilter()));
             services.AddDbContext<SecureMailDbContext>(options =>
             {
                 string connection =
                     @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=SecureMailDb;Integrated Security=True;";
                 options.UseSqlServer(connection);
             });
+
+            services.AddScoped<IHybridEncryptionService, HybridEncryptionService>();
 
             services.AddIdentity<User, IdentityRole>(options =>
             {

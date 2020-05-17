@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecureMailApp;
 
 namespace SecureMailApp.Migrations
 {
     [DbContext(typeof(SecureMailDbContext))]
-    partial class SecureMailDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200516193726_CreatedEncryptedPackets")]
+    partial class CreatedEncryptedPackets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,9 +171,6 @@ namespace SecureMailApp.Migrations
                     b.Property<byte[]>("Iv")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<DateTime>("ReceiveDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ReceiverEmail")
                         .HasColumnType("nvarchar(max)");
 
@@ -181,7 +180,12 @@ namespace SecureMailApp.Migrations
                     b.Property<byte[]>("Signature")
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("EncryptedPacketId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("EncryptedPackets");
                 });
@@ -325,6 +329,13 @@ namespace SecureMailApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SecureMailApp.Entities.EncryptedPacket", b =>
+                {
+                    b.HasOne("SecureMailApp.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("SecureMailApp.Entities.Message", b =>
