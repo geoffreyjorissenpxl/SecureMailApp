@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ using SecureMailApp.ViewModels;
 
 namespace SecureMailApp.Controllers
 {
-    public class MessageController : Controller 
+    public class MessageController : Controller
     {
         private SecureMailDbContext _secureMailDbContext;
         private IHybridEncryptionService _hybridEncryptionService;
@@ -46,18 +47,27 @@ namespace SecureMailApp.Controllers
             }
 
             return View();
-          
+
         }
 
 
         public IActionResult GetMessage(int id)
         {
             var encryptedPacket = _secureMailDbContext.EncryptedPackets.FirstOrDefault(e => e.EncryptedPacketId == id);
+            string message;
 
-            var decryptedData = _hybridEncryptionService.DecryptData(encryptedPacket,
-                new RSAEncryption(encryptedPacket.ReceiverEmail), new DigitalSignature(encryptedPacket.SenderEmail));
+            try
+            {
+                var decryptedData = _hybridEncryptionService.DecryptData(encryptedPacket,
+                   new RSAEncryption(encryptedPacket.ReceiverEmail), new DigitalSignature(encryptedPacket.SenderEmail));
+                ViewBag.Message = Encoding.UTF8.GetString(decryptedData);
+            }
+            catch(CryptographicException e)
+            {
+                ViewBag.Message = e.Message.ToString();
+            }
 
-            ViewBag.Message = Encoding.UTF8.GetString(decryptedData);
+            
             return View();
         }
 
