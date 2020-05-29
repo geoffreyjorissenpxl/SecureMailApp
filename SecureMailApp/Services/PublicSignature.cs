@@ -15,7 +15,7 @@ namespace SecureMailApp.Services
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                rsa.FromXmlString(File.ReadAllText($"storage/{senderEmail}/privateKey{senderEmail}.xml"));
+                rsa.FromXmlString(File.ReadAllText($"storage/{senderEmail}/keys/privateKey{senderEmail}.xml"));
 
                 var rsaFormatter = new RSAPKCS1SignatureFormatter(rsa);
                 rsaFormatter.SetHashAlgorithm("SHA256");
@@ -28,7 +28,7 @@ namespace SecureMailApp.Services
         {
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
-                rsa.FromXmlString(File.ReadAllText($"storage/{senderEmail}/publicKey{senderEmail}.xml"));
+                rsa.FromXmlString(File.ReadAllText($"storage/{senderEmail}/keys/publicKey{senderEmail}.xml"));
 
                 var rsaDeformatter = new RSAPKCS1SignatureDeformatter(rsa);
                 rsaDeformatter.SetHashAlgorithm("SHA256");

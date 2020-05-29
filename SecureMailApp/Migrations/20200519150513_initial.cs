@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SecureMailApp.Migrations
 {
-    public partial class initialCreation : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -39,11 +39,32 @@ namespace SecureMailApp.Migrations
                     TwoFactorEnabled = table.Column<bool>(nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
-                    AccessFailedCount = table.Column<int>(nullable: false)
+                    AccessFailedCount = table.Column<int>(nullable: false),
+                    RsaKeysSet = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EncryptedMessages",
+                columns: table => new
+                {
+                    EncryptedMessageId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ReceiveDate = table.Column<DateTime>(nullable: false),
+                    SenderEmail = table.Column<string>(nullable: true),
+                    ReceiverEmail = table.Column<string>(nullable: true),
+                    EncryptedSessionKey = table.Column<byte[]>(nullable: true),
+                    EncryptedData = table.Column<byte[]>(nullable: true),
+                    Iv = table.Column<byte[]>(nullable: true),
+                    Hmac = table.Column<byte[]>(nullable: true),
+                    Signature = table.Column<byte[]>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EncryptedMessages", x => x.EncryptedMessageId);
                 });
 
             migrationBuilder.CreateTable(
@@ -153,23 +174,30 @@ namespace SecureMailApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Messages",
+                name: "EncryptedFiles",
                 columns: table => new
                 {
-                    MessageId = table.Column<string>(nullable: false),
-                    Text = table.Column<string>(nullable: false),
-                    Sender = table.Column<string>(nullable: true),
-                    UserId = table.Column<string>(nullable: true)
+                    EncryptedFileId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SenderEmail = table.Column<string>(nullable: true),
+                    ReceiverEmail = table.Column<string>(nullable: true),
+                    FileName = table.Column<string>(nullable: true),
+                    EncryptedSessionKey = table.Column<byte[]>(nullable: true),
+                    EncryptedData = table.Column<byte[]>(nullable: true),
+                    Iv = table.Column<byte[]>(nullable: true),
+                    Hmac = table.Column<byte[]>(nullable: true),
+                    Signature = table.Column<byte[]>(nullable: true),
+                    EncryptedMessageId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => x.MessageId);
+                    table.PrimaryKey("PK_EncryptedFiles", x => x.EncryptedFileId);
                     table.ForeignKey(
-                        name: "FK_Messages_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_EncryptedFiles_EncryptedMessages_EncryptedMessageId",
+                        column: x => x.EncryptedMessageId,
+                        principalTable: "EncryptedMessages",
+                        principalColumn: "EncryptedMessageId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -212,9 +240,10 @@ namespace SecureMailApp.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_UserId",
-                table: "Messages",
-                column: "UserId");
+                name: "IX_EncryptedFiles_EncryptedMessageId",
+                table: "EncryptedFiles",
+                column: "EncryptedMessageId",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -235,13 +264,16 @@ namespace SecureMailApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "EncryptedFiles");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "EncryptedMessages");
         }
     }
 }

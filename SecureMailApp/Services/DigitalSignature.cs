@@ -13,8 +13,8 @@ namespace SecureMailApp.Services
         private readonly string _pathToPublicKey;
         public DigitalSignature(string senderEmail)
         {
-            _pathToPrivateKey = $"storage/{senderEmail}/privateKey{senderEmail}.xml";
-            _pathToPublicKey = $"storage/{senderEmail}/publicKey{senderEmail}.xml";
+            _pathToPrivateKey = $"storage/{senderEmail}/keys/privateKey{senderEmail}.xml";
+            _pathToPublicKey = $"storage/{senderEmail}/keys/publicKey{senderEmail}.xml";
         }
 
         public byte[] SignData(byte[] hashOfDataToSign)
@@ -26,7 +26,7 @@ namespace SecureMailApp.Services
 
                 var rsaFormatter = new RSAPKCS1SignatureFormatter(rsa);
                 rsaFormatter.SetHashAlgorithm("SHA256");
-
+              
                 return rsaFormatter.CreateSignature(hashOfDataToSign);
             }
         }

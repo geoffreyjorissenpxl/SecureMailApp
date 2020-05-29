@@ -1,30 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using SecureMailApp.Entities;
 using SecureMailApp.Services;
 using SecureMailApp.ViewModels;
+using System.Web;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using SecureMailApp.Entities;
 
 namespace SecureMailApp.Controllers
 {
     public class MessageController : Controller
     {
         private SecureMailDbContext _secureMailDbContext;
-        private IHybridEncryptionService _hybridEncryptionService;
+        private IMessageEncryptionService _messageEncryptionService;
+        private IFileEncryptionService _fileEncryptionService;
 
-        public MessageController(SecureMailDbContext context, IHybridEncryptionService hybridEncryptionService)
+        public MessageController(SecureMailDbContext context,
+            IMessageEncryptionService hybridEncryptionService,
+            IFileEncryptionService fileEncryptionService)
         {
             _secureMailDbContext = context;
-            _hybridEncryptionService = hybridEncryptionService;
+            _messageEncryptionService = hybridEncryptionService;
+            _fileEncryptionService = fileEncryptionService;
         }
 
         public IActionResult Inbox()
         {
-            var model = _secureMailDbContext.EncryptedPackets.
+            var model = _secureMailDbContext.EncryptedMessages.
                 Where(e => e.ReceiverEmail == User.Identity.Name).OrderByDescending(e => e.ReceiveDate).ToList();
 
             return View(model);
@@ -40,9 +44,25 @@ namespace SecureMailApp.Controllers
         [HttpPost]
         public IActionResult CreateMessage(CreateMessageModel model)
         {
+
             if (ModelState.IsValid)
             {
-                _hybridEncryptionService.EncryptData(Encoding.ASCII.GetBytes(model.Text), new RSAEncryption(model.EmailRecipient), new DigitalSignature(User.Identity.Name), User.Identity.Name, model.EmailRecipient);
+                var email = new Message
+                {
+                    EmailSender = User.Identity.Name,
+                    EmailReceiver = model.EmailReceiver,
+                    Text = model.Text,
+                    AttachedFile = model.File
+                };
+
+                var rsaEncryption = new RSAEncryption(email.EmailReceiver);
+                var digitalSignature = new DigitalSignature(User.Identity.Name);
+
+
+
+
+                var encryptedMessage = _messageEncryptionService.EncryptData(email, rsaEncryption, digitalSignature);
+                _fileEncryptionService.EncryptFile(email.AttachedFile, encryptedMessage, rsaEncryption, digitalSignature);
                 return RedirectToAction(nameof(MessageSentSuccessfully));
             }
 
@@ -53,21 +73,34 @@ namespace SecureMailApp.Controllers
 
         public IActionResult GetMessage(int id)
         {
-            var encryptedPacket = _secureMailDbContext.EncryptedPackets.FirstOrDefault(e => e.EncryptedPacketId == id);
-            string message;
+            var encryptedMessage = _secureMailDbContext.EncryptedMessages.FirstOrDefault(e => e.EncryptedMessageId == id);
 
             try
             {
-                var decryptedData = _hybridEncryptionService.DecryptData(encryptedPacket,
-                   new RSAEncryption(encryptedPacket.ReceiverEmail), new DigitalSignature(encryptedPacket.SenderEmail));
-                ViewBag.Message = Encoding.UTF8.GetString(decryptedData);
+                var rsaEncryption = new RSAEncryption(encryptedMessage.ReceiverEmail);
+                var digitalSignature = new DigitalSignature(encryptedMessage.SenderEmail);
+
+
+
+
+                var decryptedMessage = _messageEncryptionService.DecryptData(encryptedMessage,
+                   rsaEncryption, digitalSignature);
+                ViewBag.Message = Encoding.UTF8.GetString(decryptedMessage);
+
+                var encryptedFile = _secureMailDbContext.EncryptedFiles.FirstOrDefault(f => f.EncryptedFileId == id);
+
+                if (encryptedFile != null)
+                {
+                    _fileEncryptionService.DecryptData(encryptedFile, rsaEncryption, digitalSignature);
+                }
+
             }
-            catch(CryptographicException e)
+            catch (CryptographicException e)
             {
                 ViewBag.Message = e.Message.ToString();
             }
 
-            
+
             return View();
         }
 

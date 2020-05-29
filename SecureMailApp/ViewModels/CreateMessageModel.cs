@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,11 +13,16 @@ namespace SecureMailApp.ViewModels
         [Required]
         [EmailAddress]
         [Display(Name = "Email address")]
-        public string EmailRecipient { get; set; }
+        public string EmailReceiver { get; set; }
 
         [Required]
         [Display(Name = "Text area")]
         public string Text { get; set; }
+
+        public IFormFile File { get; set; }
+
+
+
 
     }
 }

@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace SecureMailApp.Entities
 {
-    public class EncryptedPacket
+    public class EncryptedMessage
     {
         public DateTime ReceiveDate { get; set; }
-        public int EncryptedPacketId { get; set; }
+        public int EncryptedMessageId { get; set; }
         public string SenderEmail { get; set; }
         public string ReceiverEmail { get; set; }
         public byte[] EncryptedSessionKey { get; set; }
@@ -16,6 +16,8 @@ namespace SecureMailApp.Entities
         public byte[] Iv { get; set; }
         public byte[] Hmac { get; set; }
         public byte[] Signature { get; set; }
+
+        public EncryptedFile EncryptedFile { get; set; }
 
     }
 }

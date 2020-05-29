@@ -39,7 +39,8 @@ namespace SecureMailApp
                 options.UseSqlServer(connection);
             });
 
-            services.AddScoped<IHybridEncryptionService, HybridEncryptionService>();
+            services.AddScoped<IMessageEncryptionService, MessageEncryptionService>();
+            services.AddScoped<IFileEncryptionService, FileEncryptionService>();
 
             services.AddIdentity<User, IdentityRole>(options =>
             {

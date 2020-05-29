@@ -1,0 +1,1 @@
+https://localhost:44359/Home/ConfirmEmailAddress?token=CfDJ8DcyWoxrK1BLoejlFlj%2BzSJUSY17dze8JBkTFLL%2BWL0SmuZycrivtc%2BZ4VguedYHFP1krSqa54H3JNitttv3Iiusi%2FDD2PRJsGT4hsk8LHcLIC6Q6bJtkZMsnbCfuJeYfXJYegDQP7YecAhx%2FpTSV3zA5i0fs29U7oCTSJuavdVKQUjS5wyofOeZeZ%2BBw98mRpISuWa7%2FE%2FzAFpcF%2FkO1%2F870Hquf20AYb%2BAlEHm3OCg%2B4NSSSOvKa3Ybermy6QsvA%3D%3D&email=alice@pxl.be

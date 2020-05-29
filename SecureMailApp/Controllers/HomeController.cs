@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Logging;
 using SecureMailApp.Entities;
 using SecureMailApp.Models;
 using SecureMailApp.ViewModels;
@@ -52,13 +46,13 @@ namespace SecureMailApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByNameAsync(model.Email);
 
                 if (!Captcha.ValidateCaptchaCode(model.CaptchaCode, HttpContext))
                 {
                     ModelState.AddModelError("", "Wrong captcha, please register again!");
                     return View();
                 }
+                var user = await _userManager.FindByNameAsync(model.Email);
 
                 if (user == null)
                 {
@@ -88,7 +82,7 @@ namespace SecureMailApp.Controllers
         }
 
 
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> ConfirmEmailAddress(string token, string email)
         {
@@ -141,7 +135,7 @@ namespace SecureMailApp.Controllers
 
                     if (!user.RsaKeysSet)
                     {
-                        CreateRsaKeys($"Storage/{user.NormalizedEmail}/publicKey{user.NormalizedEmail}.xml", $"Storage/{user.NormalizedEmail}/privateKey{user.NormalizedEmail}.xml");
+                        CreateRsaKeys($"Storage/{user.NormalizedEmail}/keys/publicKey{user.NormalizedEmail}.xml", $"Storage/{user.NormalizedEmail}/keys/privateKey{user.NormalizedEmail}.xml");
                         user.RsaKeysSet = true;
                         await _secureMailDbContext.SaveChangesAsync();
                     }
@@ -196,17 +190,11 @@ namespace SecureMailApp.Controllers
                     System.IO.File.Delete(pathToPrivateKey);
                 }
 
-                var publicKeyfolder = Path.GetDirectoryName(pathToPublicKey);
-                var privateKeyfolder = Path.GetDirectoryName(pathToPrivateKey);
+                var keysFolder = Path.GetDirectoryName(pathToPublicKey);
 
-                if (!Directory.Exists(publicKeyfolder))
+                if (!Directory.Exists(keysFolder))
                 {
-                    Directory.CreateDirectory(publicKeyfolder);
-                }
-
-                if (!Directory.Exists(privateKeyfolder))
-                {
-                    Directory.CreateDirectory(privateKeyfolder);
+                    Directory.CreateDirectory(keysFolder);
                 }
 
                 System.IO.File.WriteAllText(pathToPublicKey, rsa.ToXmlString(false));

@@ -150,9 +150,51 @@ namespace SecureMailApp.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("SecureMailApp.Entities.EncryptedPacket", b =>
+            modelBuilder.Entity("SecureMailApp.Entities.EncryptedFile", b =>
                 {
-                    b.Property<int>("EncryptedPacketId")
+                    b.Property<int>("EncryptedFileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<byte[]>("EncryptedData")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("EncryptedMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("EncryptedSessionKey")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Hmac")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("Iv")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ReceiverEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Signature")
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("EncryptedFileId");
+
+                    b.HasIndex("EncryptedMessageId")
+                        .IsUnique();
+
+                    b.ToTable("EncryptedFiles");
+                });
+
+            modelBuilder.Entity("SecureMailApp.Entities.EncryptedMessage", b =>
+                {
+                    b.Property<int>("EncryptedMessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -181,31 +223,9 @@ namespace SecureMailApp.Migrations
                     b.Property<byte[]>("Signature")
                         .HasColumnType("varbinary(max)");
 
-                    b.HasKey("EncryptedPacketId");
+                    b.HasKey("EncryptedMessageId");
 
-                    b.ToTable("EncryptedPackets");
-                });
-
-            modelBuilder.Entity("SecureMailApp.Entities.Message", b =>
-                {
-                    b.Property<string>("MessageId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Sender")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("MessageId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Messages");
+                    b.ToTable("EncryptedMessages");
                 });
 
             modelBuilder.Entity("SecureMailApp.Entities.User", b =>
@@ -327,11 +347,13 @@ namespace SecureMailApp.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SecureMailApp.Entities.Message", b =>
+            modelBuilder.Entity("SecureMailApp.Entities.EncryptedFile", b =>
                 {
-                    b.HasOne("SecureMailApp.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                    b.HasOne("SecureMailApp.Entities.EncryptedMessage", "EncryptedMessage")
+                        .WithOne("EncryptedFile")
+                        .HasForeignKey("SecureMailApp.Entities.EncryptedFile", "EncryptedMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

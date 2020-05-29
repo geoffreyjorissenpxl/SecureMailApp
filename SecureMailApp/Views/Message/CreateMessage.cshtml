@@ -1,14 +1,18 @@
 ﻿@model CreateMessageModel
 
 
-    <form asp-action="CreateMessage" method="post">
+    <form asp-action="CreateMessage" method="post" enctype="multipart/form-data">
         <div class="form-group">
-            <label asp-for="EmailRecipient"></label>
-            <input asp-for="EmailRecipient" class="form-control" placeholder="name@example.com" />
+            <label asp-for="EmailReceiver"></label>
+            <input asp-for="EmailReceiver" class="form-control" placeholder="name@example.com" />
         </div>
         <div class="form-group">
             <label asp-for="Text"></label>
             <textarea asp-for="Text" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="file"></label>
+            <input type="file" asp-for="File"/>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
         <div asp-validation-summary="All"></div>

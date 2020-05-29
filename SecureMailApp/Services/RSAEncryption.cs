@@ -14,8 +14,8 @@ namespace SecureMailApp.Services
 
         public RSAEncryption(string receiverEmail)
         {
-            _pathToPrivateKey = $"storage/{receiverEmail}/privateKey{receiverEmail}.xml";
-            _pathToPublicKey = $"storage/{receiverEmail}/publicKey{receiverEmail}.xml";
+            _pathToPrivateKey = $"storage/{receiverEmail}/keys/privateKey{receiverEmail}.xml";
+            _pathToPublicKey = $"storage/{receiverEmail}/keys/publicKey{receiverEmail}.xml";
         }
  
         public byte[] EncryptData(byte[] dataToEncrypt)

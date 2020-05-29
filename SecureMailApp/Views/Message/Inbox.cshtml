@@ -1,10 +1,11 @@
-﻿@model IEnumerable<EncryptedPacket>
+﻿@model IEnumerable<EncryptedMessage>
 <div class="align-content-lg-center">
 
     <table class="table table-sm">
         <tr>
             <th scope="col">Date</th>
             <th scope="col">Sender</th>
+            <th></th>
         </tr>
 
         @foreach (var message in @Model)
@@ -12,7 +13,7 @@
             <tr>
                 <td>@message.ReceiveDate.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@message.SenderEmail</td>
-                <td><a asp-controller="Message" asp-action="GetMessage" asp-route-id="@message.EncryptedPacketId">Read Message</a></td>
+                <td><a asp-controller="Message" asp-action="GetMessage" asp-route-id="@message.EncryptedMessageId">Read Message</a></td>
             </tr>
         }
     </table>

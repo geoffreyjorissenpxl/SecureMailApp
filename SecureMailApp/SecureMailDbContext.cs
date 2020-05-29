@@ -10,20 +10,20 @@ namespace SecureMailApp
 {
     public class SecureMailDbContext : IdentityDbContext<User>
     {
-        public DbSet<Message> Messages { get; set; }
-        public DbSet<EncryptedPacket> EncryptedPackets { get; set; }
-
-
+      
+        public DbSet<EncryptedMessage> EncryptedMessages { get; set; }
+        public DbSet<EncryptedFile> EncryptedFiles { get; set; }
         public SecureMailDbContext(DbContextOptions options) : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
-        {
-            builder.Entity<Message>().HasKey(m => m.MessageId);
-            builder.Entity<Message>().Property(m => m.Text).IsRequired();
+        {   
+            builder.Entity<EncryptedMessage>().HasKey(m => m.EncryptedMessageId);
+            builder.Entity<EncryptedFile>().HasKey(f => f.EncryptedFileId);
 
-            builder.Entity<EncryptedPacket>().HasKey(e => e.EncryptedPacketId);
+            builder.Entity<EncryptedFile>().HasOne(f => f.EncryptedMessage)
+                .WithOne(m => m.EncryptedFile);
             base.OnModelCreating(builder);
         }
     }
