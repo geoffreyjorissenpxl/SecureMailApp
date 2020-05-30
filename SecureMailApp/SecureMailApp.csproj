@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Folder Include="Storage\" />
+    <Folder Include="Storage\ALICE%40PXL.BE\files\" />
     <Folder Include="Storage\BOB%40PXL.BE\files\" />
   </ItemGroup>
 

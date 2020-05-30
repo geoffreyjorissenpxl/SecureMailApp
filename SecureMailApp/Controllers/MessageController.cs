@@ -58,11 +58,13 @@ namespace SecureMailApp.Controllers
                 var rsaEncryption = new RSAEncryption(email.EmailReceiver);
                 var digitalSignature = new DigitalSignature(User.Identity.Name);
 
-
-
-
                 var encryptedMessage = _messageEncryptionService.EncryptData(email, rsaEncryption, digitalSignature);
-                _fileEncryptionService.EncryptFile(email.AttachedFile, encryptedMessage, rsaEncryption, digitalSignature);
+
+                if(email.AttachedFile != null)
+                {
+                    _fileEncryptionService.EncryptFile(email.AttachedFile, encryptedMessage, rsaEncryption, digitalSignature);
+                }
+
                 return RedirectToAction(nameof(MessageSentSuccessfully));
             }
 
