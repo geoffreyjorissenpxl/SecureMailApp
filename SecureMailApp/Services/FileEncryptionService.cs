@@ -23,7 +23,7 @@ namespace SecureMailApp.Services
         {
             var sessionKey = _aes.GenerateRandomNumber(32);
 
-            var encryptedFile = new EncryptedFile
+            var encryptedPacket = new EncryptedFile
             {
                 Iv = _aes.GenerateRandomNumber(16),
                 SenderEmail = encryptedMessage.SenderEmail,
@@ -32,25 +32,25 @@ namespace SecureMailApp.Services
                 FileName = fileform.FileName,
             };
 
-            byte[] encryptedData;
+            byte[] fileInBytes;
 
             using (var stream = new MemoryStream())
             {
                 fileform.CopyToAsync(stream);
-                encryptedData = stream.ToArray();
+                fileInBytes = stream.ToArray();
             }
 
-            encryptedFile.EncryptedData = _aes.Encrypt(encryptedData, sessionKey, encryptedFile.Iv);
-            encryptedFile.EncryptedSessionKey = rsaEncryption.EncryptData(sessionKey);
+            encryptedPacket.EncryptedData = _aes.Encrypt(fileInBytes, sessionKey, encryptedPacket.Iv);
+            encryptedPacket.EncryptedSessionKey = rsaEncryption.EncryptData(sessionKey);
 
             using (var hmac = new HMACSHA256(sessionKey))
             {
-                encryptedFile.Hmac = hmac.ComputeHash(encryptedFile.EncryptedData);
+                encryptedPacket.Hmac = hmac.ComputeHash(encryptedPacket.EncryptedData);
             }
 
-            encryptedFile.Signature = signature.SignData(encryptedFile.Hmac);
+            encryptedPacket.Signature = signature.SignData(encryptedPacket.Hmac);
 
-            _dbContext.EncryptedFiles.Add(encryptedFile);
+            _dbContext.EncryptedFiles.Add(encryptedPacket);
             _dbContext.SaveChanges();
 
            

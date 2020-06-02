@@ -41,6 +41,7 @@ namespace SecureMailApp
 
             services.AddScoped<IMessageEncryptionService, MessageEncryptionService>();
             services.AddScoped<IFileEncryptionService, FileEncryptionService>();
+            services.AddScoped<IUserStore<User>, UserOnlyStore<User, SecureMailDbContext>>();
 
             services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -61,16 +62,12 @@ namespace SecureMailApp
                 .AddEntityFrameworkStores<SecureMailDbContext>()
                 .AddDefaultTokenProviders();
 
+        
             services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromDays(2);
             });
 
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(20);
-                options.Cookie.HttpOnly = true;
-            });
 
             services.AddSession(options =>
             {
@@ -78,10 +75,10 @@ namespace SecureMailApp
                 options.Cookie.HttpOnly = true;
             });
 
-            services.AddScoped<IUserStore<User>, UserOnlyStore<User, SecureMailDbContext>>();
+            services.AddAuthentication("cookies")
+                .AddCookie("cookies", options => options.LoginPath = "/home/Login");
 
-          /*  services.AddAuthentication("cookies")
-                .AddCookie("cookies", options => options.LoginPath = "/home/login");*/
+           
 
         }
 

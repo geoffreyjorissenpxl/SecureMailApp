@@ -27,7 +27,7 @@ namespace SecureMailApp.Services
 
             var sessionKey = _aes.GenerateRandomNumber(32);
 
-            var encryptedMessage = new EncryptedMessage
+            var encryptedPacket = new EncryptedMessage
             {
                 ReceiveDate = DateTime.Now,
                 Iv = _aes.GenerateRandomNumber(16),
@@ -35,19 +35,19 @@ namespace SecureMailApp.Services
                 ReceiverEmail = email.EmailReceiver
             };
 
-            encryptedMessage.EncryptedData = _aes.Encrypt(message, sessionKey, encryptedMessage.Iv);
-            encryptedMessage.EncryptedSessionKey = rsaEncryption.EncryptData(sessionKey);
+            encryptedPacket.EncryptedData = _aes.Encrypt(message, sessionKey, encryptedPacket.Iv);
+            encryptedPacket.EncryptedSessionKey = rsaEncryption.EncryptData(sessionKey);
 
             using (var hmac = new HMACSHA256(sessionKey))
             {
-                encryptedMessage.Hmac = hmac.ComputeHash(encryptedMessage.EncryptedData);
+                encryptedPacket.Hmac = hmac.ComputeHash(encryptedPacket.EncryptedData);
             }
 
-            encryptedMessage.Signature = signature.SignData(encryptedMessage.Hmac);
+            encryptedPacket.Signature = signature.SignData(encryptedPacket.Hmac);
 
-            _dbContext.EncryptedMessages.Add(encryptedMessage);
+            _dbContext.EncryptedMessages.Add(encryptedPacket);
             _dbContext.SaveChanges();
-            return encryptedMessage;
+            return encryptedPacket;
 
         }
 

@@ -25,7 +25,7 @@ namespace SecureMailApp.Controllers
             _messageEncryptionService = hybridEncryptionService;
             _fileEncryptionService = fileEncryptionService;
         }
-
+        
         public IActionResult Inbox()
         {
             var model = _secureMailDbContext.EncryptedMessages.
@@ -34,13 +34,14 @@ namespace SecureMailApp.Controllers
             return View(model);
         }
 
+        
         [HttpGet]
         public IActionResult CreateMessage()
         {
             return View();
         }
 
-
+        
         [HttpPost]
         public IActionResult CreateMessage(CreateMessageModel model)
         {
@@ -56,7 +57,7 @@ namespace SecureMailApp.Controllers
                 };
 
                 var rsaEncryption = new RSAEncryption(email.EmailReceiver);
-                var digitalSignature = new DigitalSignature(User.Identity.Name);
+                var digitalSignature = new DigitalSignature(email.EmailSender);
 
                 var encryptedMessage = _messageEncryptionService.EncryptData(email, rsaEncryption, digitalSignature);
 
@@ -83,23 +84,32 @@ namespace SecureMailApp.Controllers
                 var digitalSignature = new DigitalSignature(encryptedMessage.SenderEmail);
 
 
-
-
                 var decryptedMessage = _messageEncryptionService.DecryptData(encryptedMessage,
                    rsaEncryption, digitalSignature);
                 ViewBag.Message = Encoding.UTF8.GetString(decryptedMessage);
+                ViewBag.MessageDecryption = "Successfully decrypted the message";
 
-                var encryptedFile = _secureMailDbContext.EncryptedFiles.FirstOrDefault(f => f.EncryptedFileId == id);
+                var encryptedFile = _secureMailDbContext.EncryptedFiles.FirstOrDefault(f => f.EncryptedMessageId == id);
 
                 if (encryptedFile != null)
                 {
-                    _fileEncryptionService.DecryptData(encryptedFile, rsaEncryption, digitalSignature);
+                    try
+                    {
+                        _fileEncryptionService.DecryptData(encryptedFile, rsaEncryption, digitalSignature);
+                        ViewBag.FileDecryption = "Successfully decrypted the file";
+                    }
+                    catch(CryptographicException e)
+                    {
+                        ViewBag.FileEncryption = e.Message;
+                    }
+                    
                 }
 
             }
             catch (CryptographicException e)
             {
-                ViewBag.Message = e.Message.ToString();
+                ViewBag.Message = "Error";
+                ViewBag.MessageDecryption = e.Message;
             }
 
 
